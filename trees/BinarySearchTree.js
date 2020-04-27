@@ -6,74 +6,93 @@ class Node {
   }
 }
 
-/** ABSTRACT DATA TYPE per le linked list
- * @property root -> Nodo radice dell'albero
- * @method insert(data) -> Inserisce un nodo nell'albero
- * @method remove(data) -> Rimuove un nodo dall'albero
- * @method inorder(node) -> Attraversamento in order -> O(n)
- * @method preorder(node) -> Attraversamento preorder -> O(n)
- * @method postorder(node) -> Attraversamento postorder -> O(n)
- * @method getRoot() -> ritorna il nodo radice -> O(1)
- * @method getMin() -> ritorna il nodo minimo dell'albero -> O(height)
- * @method getMax() -> ritorna il nodo massimo dell'albero -> O(height)
- * @method find(node, data) -> ritorna il nodo cercato -> O(logn)
- */
 class BinarySearchTree {
   constructor() {
     this.root = null
+    this.count = 0                   //CONTEGGIO DEI NODI
+
+    this.compare = (node, newNode) => {  //FUNZIONE DI COMPARAZIONE
+      if (node < newNode) return '<'
+      if (node > newNode) return '>'
+      return '='
+    }
+
+    this.getNumEdges = (node = this.root) => {   //FUNZIONE PER IL CONTEGGIO DELLE CONNESSIONI
+      if (node.left != null) {
+        this.getNumEdges(node.left)
+        this.count++
+      }
+      if (node.right != null) {
+        this.getNumEdges(node.right)
+        this.count++
+      }
+      return this.count
+    }
+
     this.insertNode = (node, newNode) => {
-      if(newNode.data < node.data) {
-        if(node.left === null) {
+      if (this.compare(newNode.data, node.data) === '<') {
+        if (node.left === null) {
           node.left = newNode
         } else {
           this.insertNode(node.left, newNode)
         }
       } else {
-        if(node.right === null) {
+        if (node.right === null) {
           node.right = newNode
         } else {
           this.insertNode(node.right, newNode)
         }
       }
     }
+
     this.removeNode = (node, key) => {
-      if(node === null) return null
 
-      if(key < node.data) {
-        node.left = this.removeNode(node.left, key)
-        return node
+      if (node === null)
+        return null;
+
+      if (this.compare(key, node.data) === '<') {
+        node.left = this.removeNode(node.left, key);
+        return node;
       }
 
-      if(key > node.data) {
-        node.right = this.removeNode(node.right, key)
-        return node
+      else if (this.compare(key, node.data) === '>') {
+        node.right = this.removeNode(node.right, key);
+        return node;
+      }
+// CASO 1 IL NODO DA RIMUOVERE E' UNA FOGLIA -> IL CASO PIU SEMPLICE 
+      else {
+        if (node.left === null && node.right === null) {
+          node = null;
+          return node;
+        }
+        // CASO 2 IL NODO DA RIMUOVERE HA UN SOLO FIGLIO 
+        if (node.left === null) {
+          node = node.right;
+          return node;
+        }
+
+        else if (node.right === null) {
+          node = node.left;
+          return node;
+        }
       }
 
-      /** HO TROVATO IL NODO DA RIMUOVERE COME LO RIMUOVO? */
-
-      /* CASO 1 IL NODO DA RIMUOVERE E' UNA FOGLIA -> IL CASO PIU SEMPLICE */
-      if(node.left === null && node.right === null) return null
-
-      /* CASO 2 IL NODO DA RIMUOVERE HA UN SOLO FIGLIO */
-      if(node.left === null) return node.left
-      if(node.right === null) return node.right
-
-      /** CASO 3 IL NODO DA RIMUOVERE HA DUE FIGLI 
-       * DEVO:
-       * 1. Cercare il valore minimo nel sottoalbero di destra (quindi il minimo dei maggiori)
-       * 2. Devo sostituire il valore minimo trovate con il valore corrente del nodo che sto analizzando
-       * 3. Devo eliminare il nodo minimo trovato al passo 1
-      */
-      const min = this.getMin(node.left)
-      node.data = min.data
-      node.right = this.removeNode(node.left, min.data)
+      // CASO 3 IL NODO DA RIMUOVERE HA DUE FIGLI 
+      // DEVO:
+      //1. Cercare il valore minimo nel sottoalbero di destra (quindi il minimo dei maggiori)
+      // 2. Devo sostituire il valore minimo trovate con il valore corrente del nodo che sto analizzando
+      // 3. Devo eliminare il nodo minimo trovato al passo 1
+      //
+      let min = this.getMin(node.right)
+      node.data = min
+      node.right = this.removeNode(node.right, min)
       return node
     }
   }
 
   insert(data) {
     const newNode = new Node(data)
-    if(this.root === null) {
+    if (this.root === null) {
       return this.root = newNode
     } else {
       this.insertNode(this.root, newNode)
@@ -84,67 +103,68 @@ class BinarySearchTree {
     this.root = this.removeNode(this.root, data)
   }
 
-  getMin(node = null) {
-    /*let current = node !== null ? node : this.root*/
-    let current
-    if(node !== null) {
-      current = node
+  getMin(node = this.root) {
+    if (node.left === null) {
+      return node.data
     } else {
-      current = this.root
+      return this.getMin(node.left)     //RICORSIONE
     }
-    while(current.left !== null) {
-      current = current.left
-    }
-    return current
   }
 
-  getMax(node = null) {
-    let current = node !== null ? node : this.root
-    while(current.right !== null) {
-      current = current.right
+  getMax(node = this.root) {
+    if (node.right === null) {
+      return node.data
+    } else {
+      return this.getMax(node.right)     //RICORSIONE
     }
-    return current
   }
 
   getRoot() {
     return this.root
   }
 
-  preorder(node) {
-    if(node !== null) {
-      console.log(node.data) //questa può essere una funzione di callback passata come parametro
-      this.preorder(node.left)
-      this.preorder(node.right)
+  preorder(node, callback) {         // AGGIUNGO LA CALLBACK COME ARGOMENTO DELLA FUNZIONE
+    if (node !== null) {
+      this.preorder(node.left, callback)
+      this.preorder(node.right, callback)
+      callback(node)                  //CHIAMO LA CALLBACK
+    }
+
+  }
+  postorder(node, callback) {         // AGGIUNGO LA CALLBACK COME ARGOMENTO DELLA FUNZIONE
+    if (node !== null) {
+      this.postorder(node.left, callback)
+      this.postorder(node.right, callback)
+      callback(node)                   // CHIAMO LA CALLBACK
     }
   }
 
-  postorder(node) {
-    if(node !== null) {
-      this.postorder(node.left)
-      this.postorder(node.right)
-      console.log(node.data) //questa può essere una funzione di callback passata come parametro
+  inorder(node, callback) {           // AGGIUNGO LA CALLBACK COME ARGOMENTO DELLA FUNZIONE
+    if (node !== null) {
+      this.inorder(node.left, callback)
+      callback(node)                 //CHIAMO LA CALLBACK
+      this.inorder(node.right, callback)
     }
   }
 
-  inorder(node) {
-    if(node !== null) {
-      this.inorder(node.left)
-      console.log(node.data) //questa può essere una funzione di callback passata come parametro
-      this.inorder(node.right)
-    }
-  }
 
   find(node, data) {
-    if(node === null) return null
-
-    if(data < node.data) {
+    if (node === null) return null
+    if (this.compare(data, node.data) === '<') {
       return this.find(node.left, data)
-    } else if(data > node.data) {
+    } else if (this.compare(data, node.data) === '>') {
       return this.find(node.right, data)
     } else {
       return node
     }
   }
+
+  getNumNodes() {                    //FUNZIONI PER IL CONTEGGIO DEI NODI, L'HO SCRITTA QUI PER NON RADDOPPIARE IL CONTEGGIO DI COUNT
+    this.count = 0
+    let nodes = this.getNumEdges()
+    return nodes + 1
+  }
+
 }
 
 module.exports = BinarySearchTree
