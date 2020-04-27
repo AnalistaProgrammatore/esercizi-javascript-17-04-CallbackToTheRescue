@@ -1,5 +1,3 @@
-const Graph = require('./Graphs')
-const PriorityQueue = require ('./structs/Priorityqueue')
 const createGraph = require('./create-graph')
 
 const vertices = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
