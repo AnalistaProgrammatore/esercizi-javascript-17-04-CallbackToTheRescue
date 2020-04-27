@@ -38,3 +38,4 @@ console.log(myGraph)
 //    ],
 //    b: [ { vertex: '6', weight: 9 }, { vertex: '4', weight: 6 } ]
 //  }
+module.exports = createGraph
