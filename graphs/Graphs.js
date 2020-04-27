@@ -42,7 +42,7 @@ class Graph {
     console.log(graph)
   }
 
-  dfs(vertex){
+   dfs(vertex,callback){ // AGGIUNGO LA CALLBACK COME ARGOMENTO DELLA FUNZIONE
     // creo la struttura dati di appoggio e il Set dei vertici esplorati
     const stack = new Stack(this.vertex.length)
     const explored = new Set()
@@ -54,7 +54,7 @@ class Graph {
       // estraggo l'elemento corrente
       const current = stack.pop()
       // applico una funzione all'elemento corrente
-      console.log(current)
+      callback(current) //CHIAMO LA CALLBACK
       /**
        * 1. filtriamo la lista di adiacenze del vertice corrente eliminando i vertici già visistati
        * 2. per ogni connessione trovata inseriamo i suoi vertici nella struttura di appoggio
@@ -69,14 +69,14 @@ class Graph {
   }
 
   /** VEDI COMMENTI DSF */
-  bfs(vertex){
+  bfs(vertex,callback){ // AGGIUNGO LA CALLBACK COME ARGOMENTO DELLA FUNZIONE
     const queue = new Queue(this.vertex.length)
     const explored = new Set()
     queue.enqueue(vertex)
     explored.add(vertex)
     while(!queue.isEmpty()) {
       const current = queue.dequeue()
-      console.log(current)
+       callback(current)  //CHIAMO LA CALLBACK
       const edges = this.edges[current].filter(edge => !explored.has(edge.vertex))
       for(const neighbor of edges) {
         queue.enqueue(neighbor.vertex)
